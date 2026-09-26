@@ -1,41 +1,122 @@
 import streamlit as st
+import os
 from google import genai
 
-st.set_page_config(page_title="Brand Trademark Shield AI", page_icon="🛡️", layout="centered")
+st.set_page_config(
+    page_title="BrandShield AI - Trademark & Legal Conflict Detector",
+    page_icon="🛡️",
+    layout="centered"
+)
 
-st.title("🛡️ Brand Trademark Shield AI")
-st.caption("Naye brand ya domain ka legal risk aur trademark class check karein")
+# Custom Styling for Clean FinTech UI
+st.markdown("""
+    <style>
+    .main {
+        background-color: #0e1117;
+    }
+    .metric-card {
+        background: linear-gradient(135deg, #1e2638 0%, #161a25 100%);
+        border: 1px solid #2d3748;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 15px;
+    }
+    .badge-safe {
+        background-color: #065f46;
+        color: #6ee7b7;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .badge-warn {
+        background-color: #854d0e;
+        color: #fde047;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .badge-danger {
+        background-color: #991b1b;
+        color: #fca5a5;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# API Key handling
-api_key = st.secrets.get("GEMINI_API_KEY", "")
+st.title("🛡️ BrandShield AI")
+st.subheader("Indian Trademark & Domain Conflict Intelligence")
+st.caption("Naye business ya brand par legal notice aur copyright dispute aane se pehle check karein.")
+
+# Fetch API key automatically
+api_key = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+
 if not api_key:
-    api_key = st.text_input("Apni Gemini API Key enter karein:", type="password")
+    api_key = st.text_input("Gemini API Key (Admin Mode):", type="password")
 
-brand_name = st.text_input("Proposed Brand Name / Domain:", placeholder="e.g., AlphaVeda, UrbanFit")
-business_type = st.text_area("Business kiska hai? (Details likhein):", placeholder="e.g., Ayurvedic supplements & Shilajit, Clothing, Cloud kitchen")
+# Quick Example Autofills
+col1, col2 = st.columns(2)
+example_clicked = False
+if col1.button("🧪 Example: AlphaVeda (Ayurveda)"):
+    st.session_state["b_name"] = "AlphaVeda"
+    st.session_state["b_type"] = "Ayurvedic herbal supplements, Shilajit and dry fruits health powders."
+    example_clicked = True
 
-if st.button("Conflict & Risk Check Karein", type="primary"):
+if col2.button("🧪 Example: NikeFit (Sportswear)"):
+    st.session_state["b_name"] = "NikeFit"
+    st.session_state["b_type"] = "Gym wear t-shirts, activewear joggers, and sports shoes."
+    example_clicked = True
+
+brand_name = st.text_input(
+    "Proposed Brand Name / Domain:",
+    value=st.session_state.get("b_name", ""),
+    placeholder="e.g., AlphaVeda, UrbanFit, RoyalCraft"
+)
+
+business_type = st.text_area(
+    "Business / Products Offered:",
+    value=st.session_state.get("b_type", ""),
+    placeholder="e.g., E-commerce store for men's apparel, organic supplements, web design studio..."
+)
+
+if st.button("🚀 Analyze Legal Risk & Trademark Class", type="primary", use_container_width=True):
     if not api_key:
-        st.error("Kripya valid Gemini API Key dalein.")
-    elif not brand_name or not business_type:
-        st.warning("Brand name aur Business details dono bharna zaroori hai.")
+        st.error("Admin: API Key configure nahi hui hai. Secrets me GEMINI_API_KEY add karein.")
+    elif not brand_name.strip() or not business_type.strip():
+        st.warning("Kripya Brand Name aur Business details dono fill karein.")
     else:
-        with st.spinner("Trademark analysis chal raha hai..."):
+        with st.spinner("Analyzing NICE Trademark Classes, Phonetic Matching & Dispute Database..."):
             try:
                 client = genai.Client(api_key=api_key)
                 
                 prompt = f"""
-                You are an expert Indian Intellectual Property and Trademark Consultant.
-                Analyze the proposed brand name for potential legal conflicts, class classification, and registrability under the Indian Trade Marks Act, 1999 (NICE Classification).
+                You are a senior Indian Trademark Attorney and Intellectual Property Expert.
+                Analyze the following brand under the Trade Marks Act, 1999 and NICE Classification.
 
-                Proposed Brand Name: {brand_name}
-                Business / Product Nature: {business_type}
+                Brand Name: {brand_name}
+                Business Activity: {business_type}
 
-                Provide a structured report in clear Hinglish with the following sections:
-                1. Relevant Trademark Class (NICE Classification): Name the primary class (1-45) and sub-classes, explaining why.
-                2. Distinctiveness & Conflict Analysis: Check for generic words and phonetic/visual similarity risks with existing known brands.
-                3. Risk Score (0% to 100%): Give a clear percentage (Low / Moderate / High Risk) with a 2-line verdict.
-                4. Actionable Suggestions & Safe Alternatives: Provide 3 distinctive and safer name variations.
+                Return the response strictly structured in clear, bold, actionable Hinglish with the following sections:
+
+                ### 1. 📋 Relevant NICE Trademark Classification
+                - **Primary Class:** (e.g., Class 25, Class 5, Class 35) with clear reason.
+                - **Secondary / Defensive Classes:** (Which other classes they should also file to block copycats).
+
+                ### 2. ⚖️ Distinctiveness & Dispute Risk
+                - **Generic / Descriptive Check:** (Kya ye aam lafz hai jo legally protect nahi ho sakta?)
+                - **Phonetic & Visual Sound-alike:** (Does it conflict with well-known registered brands like Nike, Himalaya, Tata, etc.?)
+
+                ### 3. 🎯 Risk Verdict
+                - State **RISK LEVEL: [LOW / MODERATE / HIGH]**
+                - Estimated Conflict Score: **X%**
+                - 2-line direct legal advice.
+
+                ### 4. 💡 3 Alternative Safe Variations
+                Provide 3 high-recall, legally defensible, distinctive brand name alternatives if there is any risk.
                 """
 
                 response = client.models.generate_content(
@@ -43,9 +124,8 @@ if st.button("Conflict & Risk Check Karein", type="primary"):
                     contents=prompt
                 )
                 
-                st.success("Analysis Complete!")
+                st.markdown("---")
                 st.markdown(response.text)
                 
             except Exception as e:
-                st.error(f"Error aaya: {str(e)}")
-              
+                st.error(f"Error: {str(e)}")
