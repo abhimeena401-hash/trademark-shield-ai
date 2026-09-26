@@ -10,7 +10,6 @@ st.set_page_config(
 st.title("🛡️ BrandShield AI")
 st.subheader("Trademark & Legal Conflict Detector")
 
-# Seedha screen par key daalne ka box
 api_key = st.text_input("Apni Gemini API Key yahan paste karein:", type="password")
 
 brand_name = st.text_input(
@@ -31,7 +30,6 @@ if st.button("🚀 Analyze Legal Risk & Trademark Class", type="primary", use_co
     else:
         with st.spinner("Analyzing NICE Trademark Classes & Legal Conflicts..."):
             try:
-                # Direct client initialization
                 client = genai.Client(api_key=api_key.strip())
                 
                 prompt = f"""
@@ -61,7 +59,7 @@ if st.button("🚀 Analyze Legal Risk & Trademark Class", type="primary", use_co
                 """
 
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-3.8-flash',
                     contents=prompt
                 )
                 
@@ -70,3 +68,4 @@ if st.button("🚀 Analyze Legal Risk & Trademark Class", type="primary", use_co
                 
             except Exception as e:
                 st.error(f"Error: {str(e)}")
+                
