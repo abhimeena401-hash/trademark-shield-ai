@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from google import genai
 
 st.set_page_config(
@@ -7,10 +8,12 @@ st.set_page_config(
     layout="centered"
 )
 
+# Secrets se key apne aap load hogi
+api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+
 st.title("🛡️ BrandShield AI")
 st.subheader("Trademark & Legal Conflict Detector")
-
-api_key = st.text_input("Apni Gemini API Key yahan paste karein:", type="password")
+st.caption("Kisi bhi brand ya domain ko launch karne se pehle legal risk check karein.")
 
 brand_name = st.text_input(
     "Proposed Brand Name / Domain:",
@@ -23,10 +26,10 @@ business_type = st.text_area(
 )
 
 if st.button("🚀 Analyze Legal Risk & Trademark Class", type="primary", use_container_width=True):
-    if not api_key.strip():
-        st.error("Kripya pehle upar apni Gemini API Key paste karein.")
-    elif not brand_name.strip() or not business_type.strip():
-        st.warning("Brand name aur business details dono fill karein.")
+    if not brand_name.strip() or not business_type.strip():
+        st.warning("Kripya Brand Name aur Business Details dono bharein.")
+    elif not api_key:
+        st.error("Backend API Key set nahi hai. Streamlit Secrets check karein.")
     else:
         with st.spinner("Analyzing NICE Trademark Classes & Legal Conflicts..."):
             try:
